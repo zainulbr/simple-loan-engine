@@ -1,22 +1,18 @@
-package routes
+package loan
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/zainulbr/simple-loan-engine/controllers"
 	"github.com/zainulbr/simple-loan-engine/libs/db/pgsql"
 	"github.com/zainulbr/simple-loan-engine/middlewares"
 	"github.com/zainulbr/simple-loan-engine/models/user"
+	"github.com/zainulbr/simple-loan-engine/registry"
 	"github.com/zainulbr/simple-loan-engine/repositories/filemanager"
 	"github.com/zainulbr/simple-loan-engine/repositories/loan"
 	fileService "github.com/zainulbr/simple-loan-engine/services/filemanager"
 	loanService "github.com/zainulbr/simple-loan-engine/services/loan"
 )
 
-func RegisterLoanRoutes(router *gin.RouterGroup) {
-
-	group := router.Group("/loans")
-	group.Use(middlewares.AuthorizeJWT())
-
+func NewLoan() registry.Router {
 	// Initialize Repositories
 	loanRepo := loan.NewLoanRepository(pgsql.DB())
 	fileRepo := filemanager.NewFileRepository(pgsql.DB())
@@ -24,40 +20,50 @@ func RegisterLoanRoutes(router *gin.RouterGroup) {
 	loanService := loanService.NewLoanService(loanRepo, fileRepo)
 	fileManagerService := fileService.NewFileService(fileRepo, "./uploads")
 
-	// Initialize Controllers
-	loanController := controllers.NewLoanController(
-		loanService,
-		fileManagerService,
-	)
+	return &loanController{
+		loanService:        loanService,
+		fileManagerService: fileManagerService,
+	}
+}
+
+func (c *loanController) RegisterRoutes(router *gin.RouterGroup) {
+
+	group := router.Group("/loans")
+	group.Use(middlewares.AuthorizeJWT())
 
 	group.POST("",
 		middlewares.RolePermission(user.RoleBorrower),
-		loanController.CreateLoan,
+		c.CreateLoan,
 	)
 
 	group.GET("/:id",
-		loanController.GetLoanDetail)
+		c.GetLoanDetail)
 
 	group.GET("/:id/total-interest",
 		middlewares.RolePermission(user.RoleFieldOfficer),
-		loanController.GetTotalPayment)
+		c.GetTotalPayment)
 
 	group.GET("/:id/profit-investor",
 		middlewares.RolePermission(user.RoleFieldOfficer),
-		loanController.GetInvestorProfitList)
+		c.GetInvestorProfitList)
 
 	// TBD: Chanege permission to Field Validator
 	group.POST("/:id/approve",
 		middlewares.RolePermission(user.RoleFiledValidator),
-		loanController.ApproveLoan)
+		c.ApproveLoan)
 
 	// TBD: Change permission to investor
 	group.POST("/:id/invest",
 		middlewares.RolePermission(user.RoleInvestor),
-		loanController.CreateInvestment)
+		c.CreateInvestment)
 	// TBD: Change permission to Field Officer
 	group.POST("/:id/disburse",
 		middlewares.RolePermission(user.RoleFieldOfficer),
-		loanController.CreateDisbursement)
+		c.CreateDisbursement)
+
+}
+
+func init() {
+	registry.RegisterRouter(NewLoan)
 
 }

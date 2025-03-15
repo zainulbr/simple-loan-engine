@@ -1,4 +1,4 @@
-package controllers
+package file
 
 import (
 	"net/http"
@@ -10,10 +10,6 @@ import (
 
 type fileHandler struct {
 	fileService filemanager.FileService
-}
-
-func NewFileController(fileService filemanager.FileService) *fileHandler {
-	return &fileHandler{fileService: fileService}
 }
 
 // Get serves file
