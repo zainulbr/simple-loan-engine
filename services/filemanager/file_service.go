@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mime"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -115,4 +116,27 @@ func (s *fileService) DeleteFile(ctx context.Context, fileID uuid.UUID) error {
 
 	// Delete from DB
 	return s.fileRepo.Delete(ctx, fileID)
+}
+
+// PreviewFile returns the file path and MIME type for serving as HTTP response
+func (s *fileService) PreviewFile(ctx context.Context, fileID uuid.UUID) (string, string, error) {
+	// Get file metadata from database
+	file, err := s.fileRepo.GetByID(ctx, fileID)
+	if err != nil {
+		return "", "", fmt.Errorf("file not found: %w", err)
+	}
+
+	// Check if file exists
+	if _, err := os.Stat(file.Location); errors.Is(err, os.ErrNotExist) {
+		return "", "", fmt.Errorf("file does not exist: %s", file.Location)
+	}
+
+	// Determine MIME type based on extension
+	ext := filepath.Ext(file.Location)
+	mimeType := mime.TypeByExtension(ext)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	return file.Location, mimeType, nil
 }

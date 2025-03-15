@@ -14,6 +14,7 @@ type FileService interface {
 	GetFileByID(ctx context.Context, fileID uuid.UUID) (*filemanager.File, error)
 	DeleteFile(ctx context.Context, fileID uuid.UUID) error
 	ValidateFileFormat(file multipart.File, fileHeader *multipart.FileHeader) error
+	PreviewFile(ctx context.Context, fileID uuid.UUID) (string, string, error)
 }
 
 // Allowed file extensions and MIME types
