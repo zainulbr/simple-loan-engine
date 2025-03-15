@@ -130,10 +130,13 @@ func (s *loanService) getEmailInvestors(ctx context.Context, loanId uuid.UUID) (
 
 func (s *loanService) genReport(ctx context.Context, loanId uuid.UUID) (string, error) {
 	pathFile := path.Join(s.basePath, loanId.String()+".pdf")
+
 	pdf.NewService().GeneratePDF(pdf.ReportParam{
 		FilePath: pathFile,
-		Data:     pdf.Data{},
+		// TBD: add detail data each of investor
+		Data: pdf.Data{},
 	})
+
 	fileDetail := &filemanager.File{
 		FileType:     ".pdf",
 		Label:        loanId.String() + ".pdf",
@@ -166,7 +169,6 @@ func (s *loanService) publishAggrementLatter(ctx context.Context, loanId uuid.UU
 	}
 	// get file link
 	link := s.genReportLink(fileId)
-	fmt.Println(link)
 	for _, v := range emails {
 		emailBody, err := template.TemplateEmailAgreement(template.EmailData{
 			LoanID:       loanId.String(),
@@ -174,6 +176,7 @@ func (s *loanService) publishAggrementLatter(ctx context.Context, loanId uuid.UU
 			AgreementURL: link,
 		})
 		if err != nil {
+			// TBD: Handle error on go routine
 			fmt.Println(err)
 			break
 		}
