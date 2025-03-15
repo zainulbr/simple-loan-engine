@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // Claims is a struct that will be encoded to a JWT Payload.
@@ -13,7 +13,7 @@ type Claims struct {
 	UserId    string
 	Role      string
 	Timestamp time.Time
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 type jwtServices struct {
@@ -27,10 +27,10 @@ func (service *jwtServices) GenerateToken(userId, role string, timestamp time.Ti
 		UserId:    userId,
 		Role:      role,
 		Timestamp: timestamp,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(), // 1 hour
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)), // 1 hour
 			Issuer:    service.issure,
-			IssuedAt:  time.Now().Unix(),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
