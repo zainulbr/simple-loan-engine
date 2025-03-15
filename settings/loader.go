@@ -65,6 +65,13 @@ func Load() (*Settings, error) {
 				URI:     getEnv("POSTGRES_URI", ""),
 				Enabled: getEnvAsBool("POSTGRES_ENABLED", true),
 			},
+			SMTP: SMTPOption{
+				Host:     getEnv("SMTP_HOST", "smtp.gmail.com"),
+				Port:     getEnvAsInt("SMTP_PORT", 465),
+				Username: getEnv("SMTP_USER", ""),
+				Password: getEnv("SMTP_PASS", ""),
+				From:     getEnv("SMTP_FROM", "smtp@gmail.com"),
+			},
 		},
 	}
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/zainulbr/simple-loan-engine/libs/notification/mail"
 	"github.com/zainulbr/simple-loan-engine/models/loan"
 	loanRepository "github.com/zainulbr/simple-loan-engine/repositories/loan"
 )
@@ -78,6 +79,12 @@ func (s *loanService) CreateInvestment(ctx context.Context, investment *loan.Loa
 		return err
 	}
 
+	// Check if principal == total all investment
+	if (loanDetail.TotalInvestment + investment.Amount) == investment.Amount {
+		// async no blocking
+		go s.publishAggrementLatter(context.Background(), investment.LoanId)
+	}
+
 	return nil
 }
 
@@ -101,4 +108,34 @@ func (s *loanService) CreateDisbursement(ctx context.Context, disbursement *loan
 	}
 
 	return nil
+}
+
+func (s *loanService) getEmailInvestors(ctx context.Context, loanId uuid.UUID) ([]string, error) {
+	emails, err := s.loanRepo.GetInvestorEmailsByLoanID(ctx, loanId)
+	if err != nil {
+		return nil, err
+	}
+	return emails, nil
+}
+
+func (s *loanService) genReport(ctx context.Context) error {
+	return nil
+}
+
+func (s *loanService) genReportLink(ctx context.Context) error {
+	return nil
+}
+
+func (s *loanService) publishAggrementLatter(ctx context.Context, loanId uuid.UUID) error {
+	emails, err := s.getEmailInvestors(ctx, loanId)
+	if err != nil {
+		return err
+	}
+
+	// call gen report
+	s.genReport(ctx)
+	// get file link
+	s.genReportLink(ctx)
+
+	return mail.Mail().Send(emails, "Draft Aggrement Latter", "Please check this draft aggrement")
 }
