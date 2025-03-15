@@ -14,7 +14,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zainulbr/simple-loan-engine/libs/db/pgsql"
 	"github.com/zainulbr/simple-loan-engine/libs/notification/mail"
-	"github.com/zainulbr/simple-loan-engine/routes"
+	"github.com/zainulbr/simple-loan-engine/registry"
+	_ "github.com/zainulbr/simple-loan-engine/routes/file"
+	_ "github.com/zainulbr/simple-loan-engine/routes/loan"
+
 	"github.com/zainulbr/simple-loan-engine/settings"
 )
 
@@ -29,8 +32,12 @@ func start(config *settings.Settings) error {
 
 	router := gin.Default()
 	base := router.Group(config.App.Server.APIBase)
-	routes.RegisterLoanRoutes(base)
-	routes.RegisterFileRoutes(base)
+
+	for _, api := range registry.Routers() {
+		instance := api()
+		instance.RegisterRoutes(base)
+	}
+
 	server := &http.Server{
 		Addr:    config.App.Server.HTTPAddress,
 		Handler: router,
