@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS loan.loans (
   amount integer,
   duration_month integer,
   rate float,
-  "state" loan.loan_state not null,
+  "state" loan.loan_state not null default 'proposed',
   approval_date timestamp,
   aggrement_file UUID REFERENCES file.files (file_id),
   created_at timestamp default current_timestamp,
@@ -64,3 +64,8 @@ CREATE TABLE IF NOT EXISTS loan.disbursments (
   created_at timestamp default current_timestamp,
   updated_at timestamp default current_timestamp
 );
+
+ALTER TABLE loan.investments ADD CONSTRAINT check_total_investment
+CHECK 
+    ((SELECT SUM(amount) FROM loan.investment WHERE loan_id = loan.investment.loan_id) 
+    <= (SELECT amount FROM loan.loans WHERE loan_id = loan.investment.loan_id));
