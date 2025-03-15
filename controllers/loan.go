@@ -2,24 +2,31 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/zainulbr/simple-loan-engine/middlewares"
+	"github.com/zainulbr/simple-loan-engine/models/filemanager"
 	"github.com/zainulbr/simple-loan-engine/models/loan"
 	models "github.com/zainulbr/simple-loan-engine/models/loan"
+	fmServices "github.com/zainulbr/simple-loan-engine/services/filemanager"
 	services "github.com/zainulbr/simple-loan-engine/services/loan"
 )
 
 // loanController struct
 type loanController struct {
-	loanService services.LoanService
+	loanService        services.LoanService
+	fileManagerService fmServices.FileService
 }
 
 // NewLoanController creates a new instance of loanController
-func NewLoanController(loanService services.LoanService) *loanController {
+func NewLoanController(loanService services.LoanService,
+	fileManagerService fmServices.FileService) *loanController {
 	return &loanController{
-		loanService: loanService,
+		loanService:        loanService,
+		fileManagerService: fileManagerService,
 	}
 }
 
@@ -77,13 +84,59 @@ func (c *loanController) ApproveLoan(ctx *gin.Context) {
 		return
 	}
 
-	request.ApprovedBy = userId
+	approvedDateStr := ctx.PostForm("approval_date")
+	approvedRateStr := ctx.PostForm("rate")
 
-	if err := ctx.ShouldBindJSON(&request); err != nil {
+	if approvedDateStr == "" || approvedRateStr == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "approval_date & rate are required"})
+		return
+	}
+
+	// Parse approved_date (menggunakan format ISO 8601 atau RFC3339)
+	approvedDate, err := time.Parse(time.RFC3339, approvedDateStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid approved_date format, expected RFC3339 (e.g., 2024-03-13T15:04:05Z)"})
+		return
+	}
+
+	// Parse approved_date (menggunakan format ISO 8601 atau RFC3339)
+	approvalRate, err := strconv.ParseFloat(approvedRateStr, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid rate format, expected float (e.g., 0.1)"})
+		return
+	}
+
+	// Handle file upload
+	file, header, err := ctx.Request.FormFile("visited_file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "visited_file is required"})
+		return
+	}
+	defer file.Close()
+
+	// Validate file format
+	if err := c.fileManagerService.ValidateFileFormat(file, header); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Save file to disk and detail on db
+	// TBD: Need rollback delete when approval loan failed
+	fileDetail, err := c.fileManagerService.UploadFile(ctx.Request.Context(),
+		file,
+		header,
+		filemanager.LocationTypeLocal,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	request.ApprovedBy = userId
+	request.ApprovalDate = approvedDate
+	request.VisitedFile = fileDetail.FileID
+	request.Rate = approvalRate
 	err = c.loanService.ApproveLoan(ctx.Request.Context(), &request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
