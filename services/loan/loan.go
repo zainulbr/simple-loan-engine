@@ -14,4 +14,6 @@ type LoanService interface {
 	GetLoanDetail(ctx context.Context, loanID uuid.UUID) (*loan.LoanDetail, error)
 	CreateInvestment(ctx context.Context, investment *loan.LoanInvestment) error
 	CreateDisbursement(ctx context.Context, disbursement *loan.LoanDisbursement) error
+	TotalPayment(ctx context.Context, loanID string) (*loan.BorrowerPayment, error)
+	GetInvestorProfit(ctx context.Context, loanID string) ([]loan.InvestorProfit, error)
 }

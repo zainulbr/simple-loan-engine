@@ -30,7 +30,7 @@ func start(config *settings.Settings) error {
 	router := gin.Default()
 	base := router.Group(config.App.Server.APIBase)
 	routes.RegisterLoanRoutes(base)
-
+	routes.RegisterFileRoutes(base)
 	server := &http.Server{
 		Addr:    config.App.Server.HTTPAddress,
 		Handler: router,

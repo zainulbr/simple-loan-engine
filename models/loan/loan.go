@@ -73,3 +73,17 @@ type LoanDisbursement struct {
 	CreatedAt       time.Time `json:"created_at,omitempty"`
 	UpdatedAt       time.Time `json:"updated_at,omitempty"`
 }
+
+type InvestorProfit struct {
+	LoanID        string  `json:"loan_id"`
+	EmailInvestor string  `json:"email_investor"`
+	TotalProfit   float64 `json:"total_profit"`
+	ROI           float64 `json:"roi"`
+}
+
+type BorrowerPayment struct {
+	LoanID        string  `json:"loan_id"`
+	Principal     float64 `json:"principal"`
+	TotalInterest float64 `json:"total_interest"`
+	TotalPayment  float64 `json:"total_payment"`
+}

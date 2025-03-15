@@ -10,7 +10,7 @@ type ReportParam struct {
 }
 
 type Data struct {
-	Applicant      string
+	Lender         string
 	Investor       string
 	ROI            string
 	Rate           string
@@ -37,8 +37,8 @@ func (s *pdfService) GeneratePDF(param ReportParam) error {
 	pdf.Ln(12)
 
 	pdf.SetFont("Arial", "", 12)
-	pdf.Cell(40, 10, "Applicant Name: ")
-	pdf.Cell(0, 10, data.Applicant)
+	pdf.Cell(40, 10, "Lender Name: ")
+	pdf.Cell(0, 10, data.Lender)
 	pdf.Ln(8)
 
 	pdf.Cell(40, 10, "Investor: ")
