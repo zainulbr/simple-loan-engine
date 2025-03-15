@@ -1,4 +1,4 @@
-package controllers
+package loan
 
 import (
 	"context"
@@ -22,14 +22,7 @@ type loanController struct {
 	fileManagerService fmServices.FileService
 }
 
-// NewLoanController creates a new instance of loanController
-func NewLoanController(loanService services.LoanService,
-	fileManagerService fmServices.FileService) *loanController {
-	return &loanController{
-		loanService:        loanService,
-		fileManagerService: fileManagerService,
-	}
-}
+
 
 func (c *loanController) getUserId(ctx *gin.Context) (uuid.UUID, bool) {
 	userIdString, ok := middlewares.GetClaim(ctx)["loan.user_id"].(string)
