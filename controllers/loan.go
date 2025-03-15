@@ -266,3 +266,29 @@ func (c *loanController) CreateDisbursement(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Loan disbursed successfully"})
 }
+
+// GetTotalPaymentHandler (GET /loans/:id/total-interest)
+func (c *loanController) GetTotalPayment(ctx *gin.Context) {
+	loanID := ctx.Param("id")
+
+	totalPayment, err := c.loanService.TotalPayment(ctx.Request.Context(), loanID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": totalPayment})
+}
+
+// GetInvestorProfitList (GET /loans/:id/profit-investor)
+func (lc *loanController) GetInvestorProfitList(c *gin.Context) {
+	loanID := c.Param("id")
+
+	profits, err := lc.loanService.GetInvestorProfit(c.Request.Context(), loanID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, profits)
+}

@@ -36,21 +36,28 @@ func RegisterLoanRoutes(router *gin.RouterGroup) {
 	)
 
 	group.GET("/:id",
-		middlewares.RolePermission(user.RoleBorrower),
 		loanController.GetLoanDetail)
+
+	group.GET("/:id/total-interest",
+		middlewares.RolePermission(user.RoleFieldOfficer),
+		loanController.GetTotalPayment)
+
+	group.GET("/:id/profit-investor",
+		middlewares.RolePermission(user.RoleFieldOfficer),
+		loanController.GetInvestorProfitList)
 
 	// TBD: Chanege permission to Field Validator
 	group.POST("/:id/approve",
-		middlewares.RolePermission(user.RoleBorrower),
+		middlewares.RolePermission(user.RoleFiledValidator),
 		loanController.ApproveLoan)
 
 	// TBD: Change permission to investor
 	group.POST("/:id/invest",
-		middlewares.RolePermission(user.RoleBorrower),
+		middlewares.RolePermission(user.RoleInvestor),
 		loanController.CreateInvestment)
 	// TBD: Change permission to Field Officer
 	group.POST("/:id/disburse",
-		middlewares.RolePermission(user.RoleBorrower),
+		middlewares.RolePermission(user.RoleFieldOfficer),
 		loanController.CreateDisbursement)
 
 }
