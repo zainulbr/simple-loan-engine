@@ -14,6 +14,8 @@ type LoanRepository interface {
 	CreateInvestment(ctx context.Context, investment *loan.LoanInvestment) error
 	CreateDisbursement(ctx context.Context, disbursement *loan.LoanDisbursement) error
 	GetInvestorEmailsByLoanID(ctx context.Context, loanID uuid.UUID) ([]string, error)
+	GetInvestorProfitList(ctx context.Context, loanID string) ([]loan.InvestorProfit, error)
+	GetTotalPaymentByLoanID(ctx context.Context, loanID string) (*loan.BorrowerPayment, error)
 }
 
 type loanModelPG struct {

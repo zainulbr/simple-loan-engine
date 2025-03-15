@@ -21,7 +21,7 @@ func RegisterLoanRoutes(router *gin.RouterGroup) {
 	loanRepo := loan.NewLoanRepository(pgsql.DB())
 	fileRepo := filemanager.NewFileRepository(pgsql.DB())
 	// Initialize Services
-	loanService := loanService.NewLoanService(loanRepo)
+	loanService := loanService.NewLoanService(loanRepo, fileRepo)
 	fileManagerService := fileService.NewFileService(fileRepo, "./uploads")
 
 	// Initialize Controllers

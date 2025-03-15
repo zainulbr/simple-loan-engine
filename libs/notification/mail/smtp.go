@@ -26,7 +26,7 @@ func NewSMTPSender(config SMTPConfig) MailService {
 
 // Send sends an email to the specified recipients.
 func (e *emailSender) Send(to []string, subject, body string) error {
-	msg := fmt.Sprintf("From: %s\nTo: %s\nSubject: %s\n\n%s", e.config.From, to, subject, body)
+	msg := fmt.Sprintf("From: %s\nTo: %s\nSubject: %s\nMIME-Version: 1.0\nContent-Type: text/html; charset=\"UTF-8\"\n\n%s", e.config.From, to, subject, body)
 	auth := smtp.PlainAuth("", e.config.Username, e.config.Password, e.config.Host)
 
 	address := fmt.Sprintf("%s:%d", e.config.Host, e.config.Port)

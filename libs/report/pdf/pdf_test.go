@@ -10,9 +10,9 @@ func TestGeneratePDF(t *testing.T) {
 	input := ReportParam{
 		FilePath: filename,
 		Data: Data{
-			Applicant:      "Test User",
+			Lender:         "Test User",
 			Investor:       "Test Investor",
-			ROI:            "10%",
+			ROI:            "1%",
 			Rate:           "4%",
 			Duration:       "12 months",
 			ImportantDates: []string{"Application Date: 01-Feb-2024", "Approval Date: 10-Feb-2024"},

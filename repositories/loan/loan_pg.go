@@ -117,3 +117,43 @@ func (r *loanRepo) GetInvestorEmailsByLoanID(ctx context.Context, loanID uuid.UU
 
 	return emails, nil
 }
+
+func (r *loanRepo) GetTotalPaymentByLoanID(ctx context.Context, loanID string) (*loan.BorrowerPayment, error) {
+	var result loan.BorrowerPayment
+	query := `
+		SELECT 
+			l.loan_id,
+			l.amount AS principal,
+			((l.amount * l.rate) * (l.duration_month/12)) AS total_interest
+		FROM loan.loans l
+		WHERE l.loan_id = ?
+	`
+
+	_, err := r.db.QueryOneContext(ctx, &result, query, loanID)
+	if err != nil {
+		return nil, err
+	}
+	result.TotalPayment = result.Principal + result.TotalInterest
+	return &result, nil
+}
+
+func (r *loanRepo) GetInvestorProfitList(ctx context.Context, loanID string) ([]loan.InvestorProfit, error) {
+	var results []loan.InvestorProfit
+	// TBD need to store ROI
+	// Replace reate to roi
+	query := `
+		SELECT 
+			i.loan_id,
+			u.email,
+			((i.amount * l.rate) * (l.duration_month/12)) AS total_profit
+		FROM loan.investment i
+		JOIN "user".users u ON i.invested_by = u.user_id
+		JOIN loan.loans l ON i.loan_id = l.loan_id
+		WHERE i.loan_id = ?
+	`
+	_, err := r.db.QueryContext(ctx, &results, query, loanID)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
