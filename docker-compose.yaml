@@ -15,7 +15,28 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - loan_network
+  test:
+    build:
+      context: .
+      target: test_img
+    volumes:
+      - ./:/src
+  dev: &dev
+    build:
+      context: .
+      target: dev_img
+    ports:
+      - "8080:8080"
+    depends_on: 
+      - postgres
+    links:
+      - postgres
 
+  prod:
+    <<: *dev
+    build:
+      context: .
+      target: prod_img
 volumes:
   postgres_data:
     driver: local
