@@ -10,9 +10,9 @@ import (
 
 // Claims is a struct that will be encoded to a JWT Payload.
 type Claims struct {
-	UserId    string
-	Role      string
-	Timestamp time.Time
+	UserId    string    `json:"loan.user_id,omitempty" mapstructure:"loan.user_id"`
+	Role      string    `json:"loan.role,omitempty" mapstructure:"loan.role"`
+	Timestamp time.Time `json:"loan.timestamp,omitempty" mapstructure:"loan.timestamp"`
 	jwt.RegisteredClaims
 }
 
