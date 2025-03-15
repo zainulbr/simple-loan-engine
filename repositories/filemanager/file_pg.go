@@ -12,7 +12,7 @@ type fileRepo struct {
 	db *pg.DB
 }
 
-func NewFileRepository(db *pg.DB) FileService {
+func NewFileRepository(db *pg.DB) FileRepository {
 	return &fileRepo{db: db}
 }
 

@@ -7,7 +7,7 @@ import (
 	"github.com/zainulbr/simple-loan-engine/models/filemanager"
 )
 
-type FileService interface {
+type FileRepository interface {
 	Create(ctx context.Context, file *filemanager.File) error
 	GetByID(ctx context.Context, fileID uuid.UUID) (*filemanager.File, error)
 	Delete(ctx context.Context, fileID uuid.UUID) error

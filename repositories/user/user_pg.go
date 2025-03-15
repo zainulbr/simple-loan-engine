@@ -13,7 +13,7 @@ type userRepository struct {
 	db *pg.DB
 }
 
-func NewuserRepository(db *pg.DB) UserService {
+func NewuserRepository(db *pg.DB) UserRepository {
 	return &userRepository{db: db}
 }
 
