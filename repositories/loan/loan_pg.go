@@ -98,3 +98,22 @@ func (r *loanRepo) CreateDisbursement(ctx context.Context, disbursement *loan.Lo
 	`, disbursement.LoanId, disbursement.DisbursmentDate, disbursement.DisbursementBy)
 	return err
 }
+
+// GetInvestorEmailsByLoanID retrieves a list of investor emails for a given loan_id
+func (r *loanRepo) GetInvestorEmailsByLoanID(ctx context.Context, loanID uuid.UUID) ([]string, error) {
+	var emails []string
+
+	query := `
+		SELECT DISTINCT u.email
+		FROM loan.investments i
+		JOIN "user".users u ON i.invested_by = u.user_id
+		WHERE i.loan_id = ?
+	`
+
+	_, err := r.db.QueryContext(ctx, &emails, query, loanID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch investor emails: %w", err)
+	}
+
+	return emails, nil
+}

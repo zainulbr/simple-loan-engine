@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 	"github.com/zainulbr/simple-loan-engine/libs/db/pgsql"
+	"github.com/zainulbr/simple-loan-engine/libs/notification/mail"
 	"github.com/zainulbr/simple-loan-engine/routes"
 	"github.com/zainulbr/simple-loan-engine/settings"
 )
@@ -73,6 +74,11 @@ func main() {
 				log.Fatalln(err)
 				return
 			}
+			err = mail.Open(config)
+			if err != nil {
+				log.Fatalln(err)
+				return
+			}
 
 			// start server
 			start(config)
@@ -83,6 +89,12 @@ func main() {
 				log.Fatalln(err)
 				return
 			}
+			err = mail.Close()
+			if err != nil {
+				log.Fatalln(err)
+				return
+			}
+
 		},
 	}
 

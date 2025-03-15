@@ -139,7 +139,7 @@ func (c *loanController) CreateInvestment(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Investment created successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Investment created successfully"})
 }
 
 // Create Disbursement (POST /loans/:id/disburse)
@@ -171,5 +171,5 @@ func (c *loanController) CreateDisbursement(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Loan disbursed successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Loan disbursed successfully"})
 }
