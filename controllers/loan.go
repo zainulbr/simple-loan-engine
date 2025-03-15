@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -76,8 +77,6 @@ func (c *loanController) ApproveLoan(ctx *gin.Context) {
 		return
 	}
 
-	request := loan.LoanApproval{LoanId: loanID}
-
 	userId, ok := c.getUserId(ctx)
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
@@ -132,13 +131,15 @@ func (c *loanController) ApproveLoan(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	request := loan.LoanApproval{LoanId: loanID}
 	request.ApprovedBy = userId
 	request.ApprovalDate = approvedDate
 	request.VisitedFile = fileDetail.FileID
 	request.Rate = approvalRate
 	err = c.loanService.ApproveLoan(ctx.Request.Context(), &request)
 	if err != nil {
+		// TBD: refactore validate status first
+		go c.fileManagerService.DeleteFile(context.Background(), fileDetail.FileID)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -209,17 +210,56 @@ func (c *loanController) CreateDisbursement(ctx *gin.Context) {
 		return
 	}
 
-	var disbursement loan.LoanDisbursement
-	if err := ctx.ShouldBindJSON(&disbursement); err != nil {
+	disbursementDateStr := ctx.PostForm("disbursment_date")
+
+	if disbursementDateStr == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "disbursment_date are required"})
+		return
+	}
+
+	// Parse approved_date (menggunakan format ISO 8601 atau RFC3339)
+	disbursmentDate, err := time.Parse(time.RFC3339, disbursementDateStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid approved_date format, expected RFC3339 (e.g., 2024-03-13T15:04:05Z)"})
+		return
+	}
+
+	// Handle file upload
+	file, header, err := ctx.Request.FormFile("disbursed_file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "disbursed_file is required"})
+		return
+	}
+	defer file.Close()
+
+	// Validate file format
+	if err := c.fileManagerService.ValidateFileFormat(file, header); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	disbursement.LoanId = loanID
+	// Save file to disk and detail on db
+	// TBD: Need rollback delete when approval loan failed
+	fileDetail, err := c.fileManagerService.UploadFile(ctx.Request.Context(),
+		file,
+		header,
+		filemanager.LocationTypeLocal,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	disbursement := loan.LoanDisbursement{LoanId: loanID}
 	disbursement.DisbursementBy = userId
+	disbursement.DisbursmentDate = disbursmentDate
+	disbursement.DisbursedFile = fileDetail.FileID
 
 	err = c.loanService.CreateDisbursement(ctx.Request.Context(), &disbursement)
 	if err != nil {
+		// TBD: refactore validate status first
+		go c.fileManagerService.DeleteFile(context.Background(), fileDetail.FileID)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
