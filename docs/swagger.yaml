@@ -1,0 +1,301 @@
+openapi: 3.0.0
+info:
+  title: Loan Engine
+  description: API for managing loan approvals, investments, disbursement, and agreements.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+
+paths:
+  /loans:
+    post:
+      summary: Create a new loan request
+      description: Allows a borrower to propose a new loan.
+      tags:
+        - Loans
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                description:
+                  type: string
+                duration_month:
+                  type: integer
+      responses:
+        '201':
+          description: Loan created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  errors:
+                    type: object
+
+  /loans/{loan_id}:
+    get:
+      summary: Get loan details
+      description: Retrieve detailed information about a specific loan.
+      tags:
+        - Loans
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: loan_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Loan details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  loan_id:
+                    type: integer
+                  description:
+                    type: string
+                  borrower_id:
+                    type: integer
+                  amount:
+                    type: number
+                  rate:
+                    type: number
+                  duration_month:
+                    type: integer
+                  state:
+                    type: string
+                  total_invesetment:
+                    type: number
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+
+                  
+        '400':
+          description: Invalid loan ID or unauthorized access
+
+  /loans/{loan_id}/approve:
+    post:
+      summary: Approve a loan
+      description: Staff approves a loan and provides validation details.
+      tags:
+        - Loans
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: loan_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visited_file:
+                  type: string
+                  format: binary
+                rate:
+                  type: number
+                approval_date:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Loan approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+        '400':
+          description: Invalid loan state for approval
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  errors:
+                    type: object
+
+  /loans/{loan_id}/invest:
+    post:
+      summary: Invest in a loan
+      description: Investors contribute funds to a loan.
+      tags:
+        - Loans
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: loan_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                invested_amount:
+                  type: number
+      responses:
+        '200':
+          description: Investment successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+        '400':
+          description: Investment exceeds loan principal or invalid state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  errors:
+                    type: object
+
+  /loans/{loan_id}/disburse:
+    post:
+      summary: Disburse a loan
+      description: Disburse the loan to the borrower after agreement is signed.
+      tags:
+        - Loans
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: loan_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                disbursed_file:
+                  type: string
+                  format: binary
+                disbursement_date:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Loan disbursed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+        '400':
+          description: Loan not ready for disbursement or invalid state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  errors:
+                    type: object
+
+  /loans/{loan_id}/agreement:
+    get:
+      summary: Get loan agreement file
+      description: Retrieve the agreement file for a specific loan and display it directly in the browser.
+      tags:
+        - Loans
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: loan_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Agreement file retrieved successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid loan ID or agreement not found
+
+components:
+  securitySchemes:
+    BearerAuth:
+      description: bearer token using header authorization
+      type: http
+      scheme: bearer

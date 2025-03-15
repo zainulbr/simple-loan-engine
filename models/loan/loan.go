@@ -18,10 +18,10 @@ const (
 
 type Loan struct {
 	LoanId        uuid.UUID `json:"loan_id,omitempty"`
-	Description   string    `json:"description,omitempty"`
+	Description   string    `json:"description,omitempty" binding:"required"`
 	ProposedBy    uuid.UUID `json:"proposed_by,omitempty"`
-	Amount        float64   `json:"amount,omitempty"`
-	DurationMonth int       `json:"duration_month,omitempty"`
+	Amount        float64   `json:"amount,omitempty" binding:"required"`
+	DurationMonth int       `json:"duration_month,omitempty" binding:"required"`
 	Rate          float64   `json:"rate,omitempty"`
 	State         string    `json:"state,omitempty"`
 	ApprovalDate  time.Time `json:"approval_date,omitempty"`
@@ -51,16 +51,16 @@ type LoanApproval struct {
 	ApprovalId   uuid.UUID `json:"approval_id,omitempty"`
 	LoanId       uuid.UUID `json:"loan_id,omitempty"`
 	ApprovedBy   uuid.UUID `json:"approved_by,omitempty"`
-	ApprovalDate time.Time `json:"approval_date,omitempty"`
-	VisitedFile  uuid.UUID `json:"visited_file,omitempty"` // File of visited location
-	Rate         float64   `json:"rate,omitempty"`         // Interest rate
+	ApprovalDate time.Time `json:"approval_date,omitempty" binding:"required"`
+	VisitedFile  uuid.UUID `json:"visited_file,omitempty" binding:"required"` // File of visited location
+	Rate         float64   `json:"rate,omitempty" binding:"required"`         // Interest rate
 }
 
 type LoanInvestment struct {
 	InvestmentId uuid.UUID `json:"investment_id,omitempty"`
 	LoanId       uuid.UUID `json:"loan_id,omitempty"`
 	InvestedBy   uuid.UUID `json:"invested_by,omitempty"`
-	Amount       float64   `json:"amount,omitempty"`
+	Amount       float64   `json:"amount,omitempty" binding:"required"`
 	ROI          float64   `json:"roi,omitempty"` // Return of Investment
 }
 
@@ -68,8 +68,8 @@ type LoanDisbursement struct {
 	DisbursmentId   uuid.UUID `json:"disbursment_id,omitempty"`
 	LoanId          uuid.UUID `json:"loan_id,omitempty"`
 	DisbursementBy  uuid.UUID `json:"disbursement_by,omitempty"`
-	DisbursedFile   uuid.UUID `json:"disbursed_file,omitempty"` // Signed aggrement file
-	DisbursmentDate time.Time `json:"disbursment_date,omitempty"`
+	DisbursedFile   uuid.UUID `json:"disbursed_file,omitempty" binding:"required"` // Signed aggrement file
+	DisbursmentDate time.Time `json:"disbursment_date,omitempty" binding:"required"`
 	CreatedAt       time.Time `json:"created_at,omitempty"`
 	UpdatedAt       time.Time `json:"updated_at,omitempty"`
 }
