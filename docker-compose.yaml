@@ -15,28 +15,42 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - loan_network
+    healthcheck:  
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 5s
+      retries: 5
+      timeout: 3s
+
   test:
     build:
       context: .
       target: test_img
     volumes:
       - ./:/src
+    depends_on:
+      postgres:
+        condition: service_healthy 
   dev: &dev
     build:
       context: .
       target: dev_img
     ports:
       - "8080:8080"
-    depends_on: 
-      - postgres
-    links:
-      - postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - loan_network
 
   prod:
     <<: *dev
     build:
       context: .
       target: prod_img
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
     driver: local

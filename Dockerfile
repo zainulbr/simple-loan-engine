@@ -28,7 +28,7 @@
     WORKDIR $APP_DIR/cmd/loan-engine
     RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
        go build -gcflags "all=-N -l" -o /loan-engine
-    ADD cmd/loan-engine/.env /.env
+    ADD cmd/loan-engine/.env.docker /.env
     
     ENTRYPOINT /loan-engine
     
