@@ -30,11 +30,11 @@ func Env() string {
 
 // Load global application settings, specify altPaths to add alternative config search paths
 func Load() (*Settings, error) {
-	env = getEnv("APP_ENV", EnvUnitTest)
+	// env = getEnv("APP_ENV", EnvUnitTest)
 
-	if env == EnvUnitTest {
-		return &Settings{}, nil
-	}
+	// if env == EnvUnitTest {
+	// 	return &Settings{}, nil
+	// }
 
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
