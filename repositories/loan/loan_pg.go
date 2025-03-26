@@ -144,9 +144,10 @@ func (r *loanRepo) GetInvestorProfitList(ctx context.Context, loanID string) ([]
 	query := `
 		SELECT 
 			i.loan_id,
-			u.email,
+			u.email as email_investor,
+			l.rate as roi,
 			((i.amount * l.rate) * (l.duration_month/12)) AS total_profit
-		FROM loan.investment i
+		FROM loan.investments i
 		JOIN "user".users u ON i.invested_by = u.user_id
 		JOIN loan.loans l ON i.loan_id = l.loan_id
 		WHERE i.loan_id = ?
