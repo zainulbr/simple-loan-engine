@@ -53,13 +53,15 @@ func (r *loanRepo) GetLoanDetail(ctx context.Context, loanID uuid.UUID) (*loan.L
 			l.duration_month, 
 			l.rate, 
 			l.state, 
-			l.approval_date, 
+			l.approval_date,
+			(select disbursment_date from loan.disbursments d where d.loan_id = l.loan_id) as disbursement_date, 
 			l.aggrement_file, 
 			l.created_at, 
 			l.updated_at,
 			COALESCE(SUM(i.amount), 0) AS total_investment
 		FROM loan.loans l
 		LEFT JOIN loan.investments i ON l.loan_id = i.loan_id
+		LEFT JOIN loan.disbursments d ON l.loan_id = d.loan_id
 		WHERE l.loan_id = ?
 		GROUP BY l.loan_id
 	`, loanID)
@@ -93,9 +95,11 @@ func (r *loanRepo) CreateDisbursement(ctx context.Context, disbursement *loan.Lo
 			RETURNING loan_id
 		)
 		UPDATE loan.loans
-		SET state = 'disbursed'
+		SET 
+			state = 'disbursed',
+			aggrement_file = ?			
 		WHERE loan_id = (SELECT loan_id FROM inserted_disbursement);
-	`, disbursement.LoanId, disbursement.DisbursmentDate, disbursement.DisbursementBy)
+	`, disbursement.LoanId, disbursement.DisbursmentDate, disbursement.DisbursementBy, disbursement.DisbursedFile)
 	return err
 }
 
