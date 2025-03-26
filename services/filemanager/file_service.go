@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/zainulbr/simple-loan-engine/models/filemanager"
+	model_util "github.com/zainulbr/simple-loan-engine/models/util"
 	repoFile "github.com/zainulbr/simple-loan-engine/repositories/filemanager"
 )
 
@@ -33,7 +34,7 @@ func (s *fileService) ValidateFileFormat(file multipart.File, fileHeader *multip
 	// Check if the extension is allowed
 	mimeType, allowed := allowedExtensions[ext]
 	if !allowed {
-		return errors.New("invalid file type: only JPG, PNG, PDF are allowed")
+		return errors.New("invalid file type: only JPG, PNG, PDF are allowed, " + model_util.ErrorCodeUserError)
 	}
 
 	// Validate MIME type
