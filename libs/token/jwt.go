@@ -28,7 +28,7 @@ func (service *jwtServices) GenerateToken(userId, role string, timestamp time.Ti
 		Role:      role,
 		Timestamp: timestamp,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)), // 1 hour
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // 1 hour
 			Issuer:    service.issure,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
