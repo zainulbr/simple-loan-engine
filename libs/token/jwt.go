@@ -22,13 +22,13 @@ type jwtServices struct {
 }
 
 // GenerateToken generates a new token
-func (service *jwtServices) GenerateToken(userId, role string, timestamp time.Time) string {
+func (service *jwtServices) GenerateToken(userId, role string, exp time.Time) string {
 	claims := &Claims{
 		UserId:    userId,
 		Role:      role,
-		Timestamp: timestamp,
+		Timestamp: time.Now(),
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // 1 hour
+			ExpiresAt: jwt.NewNumericDate(exp),
 			Issuer:    service.issure,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},

@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/zainulbr/simple-loan-engine/libs/notification/mail"
 	"github.com/zainulbr/simple-loan-engine/libs/report/pdf"
 	"github.com/zainulbr/simple-loan-engine/libs/template"
+	"github.com/zainulbr/simple-loan-engine/libs/token"
 	"github.com/zainulbr/simple-loan-engine/models/filemanager"
 	"github.com/zainulbr/simple-loan-engine/models/loan"
 	repoFile "github.com/zainulbr/simple-loan-engine/repositories/filemanager"
@@ -80,7 +82,7 @@ func (s *loanService) CreateInvestment(ctx context.Context, investment *loan.Loa
 	}
 
 	// Check if total investment matches loan amount
-	if (loanDetail.TotalInvestment + investment.Amount) > investment.Amount {
+	if (loanDetail.TotalInvestment + investment.Amount) > loanDetail.Amount {
 		return errors.New("investment amount exceeds loan amount")
 	}
 
@@ -90,7 +92,7 @@ func (s *loanService) CreateInvestment(ctx context.Context, investment *loan.Loa
 	}
 
 	// Check if principal == total all investment
-	if (loanDetail.TotalInvestment + investment.Amount) == investment.Amount {
+	if (loanDetail.TotalInvestment + investment.Amount) == loanDetail.Amount {
 		// async no blocking
 		go s.publishAggrementLatter(context.Background(), investment.LoanId)
 	}
@@ -171,7 +173,8 @@ func (s *loanService) genReport(ctx context.Context, loanId uuid.UUID) (string, 
 
 func (s *loanService) genReportLink(id string) string {
 	// TBD: set url configuratble
-	return "http://localhost:8080/api/files/" + id
+	token := token.NewService().GenerateToken("", "", time.Now().Add(time.Hour*1))
+	return "http://localhost:8080/api/files/" + id + "?token=" + token
 }
 
 func (s *loanService) publishAggrementLatter(ctx context.Context, loanId uuid.UUID) error {
