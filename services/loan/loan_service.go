@@ -130,11 +130,29 @@ func (s *loanService) getEmailInvestors(ctx context.Context, loanId uuid.UUID) (
 
 func (s *loanService) genReport(ctx context.Context, loanId uuid.UUID) (string, error) {
 	pathFile := path.Join(s.basePath, loanId.String()+".pdf")
+	loanDetail, err := s.loanRepo.GetLoanDetail(ctx, loanId)
+	if err != nil {
+		return "", err
+	}
 
 	pdf.NewService().GeneratePDF(pdf.ReportParam{
 		FilePath: pathFile,
 		// TBD: add detail data each of investor
-		Data: pdf.Data{},
+		Data: pdf.Data{
+			Description:         loanDetail.Description,
+			LoanNumber:          loanId.String(),
+			BorrowerName:        "TBD Borrower Name", //TODO: get Borrower Name
+			PrincipalAmount:     loanDetail.Amount,
+			Duration:            loanDetail.DurationMonth,
+			RatePerYear:         loanDetail.Rate,
+			TotalPrincipal:      0,                   //TODO: get total principal
+			InvestorName:        "TBD Investor Name", //TODO: get Investor Name
+			InvestmentAmount:    0,                   //TODO: get total investment
+			ReturnOfInvestment:  loanDetail.Rate,     //TODO: get ROI
+			TotalInvestorProfit: 0,                   //TODO: get total profit
+			SubmissionDate:      loanDetail.CreatedAt,
+			ApprovalDate:        loanDetail.ApprovalDate,
+		},
 	})
 
 	fileDetail := &filemanager.File{
@@ -143,7 +161,7 @@ func (s *loanService) genReport(ctx context.Context, loanId uuid.UUID) (string, 
 		Location:     pathFile,
 		LocationType: filemanager.LocationTypeLocal,
 	}
-	err := s.fileRepo.Create(ctx, fileDetail)
+	err = s.fileRepo.Create(ctx, fileDetail)
 	if err != nil {
 		return "", err
 

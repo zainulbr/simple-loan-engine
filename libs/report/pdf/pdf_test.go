@@ -3,6 +3,7 @@ package pdf
 import (
 	"os"
 	"testing"
+	"time"
 )
 
 func TestGeneratePDF(t *testing.T) {
@@ -10,12 +11,19 @@ func TestGeneratePDF(t *testing.T) {
 	input := ReportParam{
 		FilePath: filename,
 		Data: Data{
-			Lender:         "Test User",
-			Investor:       "Test Investor",
-			ROI:            "1%",
-			Rate:           "4%",
-			Duration:       "12 months",
-			ImportantDates: []string{"Application Date: 01-Feb-2024", "Approval Date: 10-Feb-2024"},
+			Description:         "TBD Description",
+			LoanNumber:          "TBD Loan Number",
+			BorrowerName:        "TBD Borrower Name",
+			PrincipalAmount:     1000000,
+			Duration:            12,
+			RatePerYear:         10, // in percentage
+			TotalPrincipal:      1100000,
+			InvestorName:        "TBD Investor Name",
+			InvestmentAmount:    1000000,
+			ReturnOfInvestment:  5, // in percentage
+			TotalInvestorProfit: 1050000,
+			SubmissionDate:      time.Now().AddDate(0, 0, -7),
+			ApprovalDate:        time.Now().AddDate(0, 0, -12),
 		},
 	}
 
