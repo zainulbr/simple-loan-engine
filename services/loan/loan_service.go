@@ -14,6 +14,7 @@ import (
 	"github.com/zainulbr/simple-loan-engine/libs/token"
 	"github.com/zainulbr/simple-loan-engine/models/filemanager"
 	"github.com/zainulbr/simple-loan-engine/models/loan"
+	model_util "github.com/zainulbr/simple-loan-engine/models/util"
 	repoFile "github.com/zainulbr/simple-loan-engine/repositories/filemanager"
 	loanRepository "github.com/zainulbr/simple-loan-engine/repositories/loan"
 )
@@ -52,7 +53,7 @@ func (s *loanService) ApproveLoan(ctx context.Context, approval *loan.LoanApprov
 
 	// Check if loan is in valid state for approval
 	if loanDetail.State != loan.StateProposed {
-		return errors.New("loan is not in a valid state for approval")
+		return errors.New("loan is not in a valid state for approval, " + model_util.ErrorCodeUserError)
 	}
 
 	// Create approval & Update loan state to approved
@@ -78,12 +79,12 @@ func (s *loanService) CreateInvestment(ctx context.Context, investment *loan.Loa
 
 	// Check if loan is in valid state for insvestment
 	if loanDetail.State != loan.StateApproved {
-		return errors.New("loan is not in a valid state for investment")
+		return errors.New("loan is not in a valid state for investment, " + model_util.ErrorCodeUserError)
 	}
 
 	// Check if total investment matches loan amount
 	if (loanDetail.TotalInvestment + investment.Amount) > loanDetail.Amount {
-		return errors.New("investment amount exceeds loan amount")
+		return errors.New("investment amount exceeds loan amount, " + model_util.ErrorCodeUserError)
 	}
 
 	err = s.loanRepo.CreateInvestment(ctx, investment)
@@ -110,7 +111,7 @@ func (s *loanService) CreateDisbursement(ctx context.Context, disbursement *loan
 
 	// Check if loan is in valid state for disbursement
 	if loanDetail.State != loan.StateInvested {
-		return errors.New("loan is not in a valid state for disbursement")
+		return errors.New("loan is not in a valid state for disbursement, " + model_util.ErrorCodeUserError)
 	}
 
 	// create disbursement and 	Update loan state after disbursement
@@ -208,7 +209,7 @@ func (s *loanService) publishAggrementLatter(ctx context.Context, loanId uuid.UU
 
 func (s *loanService) TotalPayment(ctx context.Context, loanID string) (*loan.BorrowerPayment, error) {
 	if loanID == "" {
-		return nil, errors.New("loan_id is required")
+		return nil, errors.New("loan_id is required, " + model_util.ErrorCodeUserError)
 	}
 
 	totalPayment, err := s.loanRepo.GetTotalPaymentByLoanID(ctx, loanID)
@@ -220,7 +221,7 @@ func (s *loanService) TotalPayment(ctx context.Context, loanID string) (*loan.Bo
 
 func (s *loanService) GetInvestorProfit(ctx context.Context, loanID string) ([]loan.InvestorProfit, error) {
 	if loanID == "" {
-		return nil, errors.New("loan_id is required")
+		return nil, errors.New("loan_id is required, " + model_util.ErrorCodeUserError)
 	}
 
 	listInvestors, err := s.loanRepo.GetInvestorProfitList(ctx, loanID)

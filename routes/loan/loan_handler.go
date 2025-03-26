@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ import (
 	"github.com/zainulbr/simple-loan-engine/models/filemanager"
 	"github.com/zainulbr/simple-loan-engine/models/loan"
 	models "github.com/zainulbr/simple-loan-engine/models/loan"
+	model_util "github.com/zainulbr/simple-loan-engine/models/util"
 	fmServices "github.com/zainulbr/simple-loan-engine/services/filemanager"
 	services "github.com/zainulbr/simple-loan-engine/services/loan"
 )
@@ -21,8 +23,6 @@ type loanController struct {
 	loanService        services.LoanService
 	fileManagerService fmServices.FileService
 }
-
-
 
 func (c *loanController) getUserId(ctx *gin.Context) (uuid.UUID, bool) {
 	userIdString, ok := middlewares.GetClaim(ctx)["loan.user_id"].(string)
@@ -55,7 +55,11 @@ func (c *loanController) CreateLoan(ctx *gin.Context) {
 	loan.ProposedBy = userId
 	createdLoan, err := c.loanService.CreateLoan(ctx.Request.Context(), &loan)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		ctx.JSON(errCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -121,8 +125,12 @@ func (c *loanController) ApproveLoan(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		ctx.JSON(errCode, gin.H{"error": err.Error()})
+
 	}
 	request := loan.LoanApproval{LoanId: loanID}
 	request.ApprovedBy = userId
@@ -133,7 +141,11 @@ func (c *loanController) ApproveLoan(ctx *gin.Context) {
 	if err != nil {
 		// TBD: refactore validate status first
 		go c.fileManagerService.DeleteFile(context.Background(), fileDetail.FileID)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		ctx.JSON(errCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -150,7 +162,11 @@ func (c *loanController) GetLoanDetail(ctx *gin.Context) {
 
 	loanDetail, err := c.loanService.GetLoanDetail(ctx.Request.Context(), loanID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		ctx.JSON(errCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -182,7 +198,11 @@ func (c *loanController) CreateInvestment(ctx *gin.Context) {
 
 	err = c.loanService.CreateInvestment(ctx.Request.Context(), &investment)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		ctx.JSON(errCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -240,7 +260,11 @@ func (c *loanController) CreateDisbursement(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		ctx.JSON(errCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -253,7 +277,11 @@ func (c *loanController) CreateDisbursement(ctx *gin.Context) {
 	if err != nil {
 		// TBD: refactore validate status first
 		go c.fileManagerService.DeleteFile(context.Background(), fileDetail.FileID)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		ctx.JSON(errCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -266,7 +294,11 @@ func (c *loanController) GetTotalPayment(ctx *gin.Context) {
 
 	totalPayment, err := c.loanService.TotalPayment(ctx.Request.Context(), loanID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		ctx.JSON(errCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -279,7 +311,11 @@ func (lc *loanController) GetInvestorProfitList(c *gin.Context) {
 
 	profits, err := lc.loanService.GetInvestorProfit(c.Request.Context(), loanID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), model_util.ErrorCodeUserError) {
+			errCode = http.StatusBadRequest
+		}
+		c.JSON(errCode, gin.H{"error": err.Error()})
 		return
 	}
 
