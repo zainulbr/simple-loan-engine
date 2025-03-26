@@ -190,3 +190,15 @@ func TestLoanMultiInvestor(t *testing.T) {
 	assert.NoError(t, err)
 
 }
+
+func TestGetEmail(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Close()
+
+	svc := NewLoanRepository(db)
+	loanId, _ := uuid.Parse("4a898b92-926f-476a-b17c-35af2df203ec")
+	emails, err := svc.GetInvestorEmailsByLoanID(context.Background(), loanId)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, emails)
+
+}
