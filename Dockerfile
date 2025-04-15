@@ -16,7 +16,7 @@
     RUN go mod download
     
     COPY . .
-    
+    COPY ./cmd/loan-engine/.env.docker ./cmd/loan-engine/.env
     CMD ["go", "test", "./..."]
     
     

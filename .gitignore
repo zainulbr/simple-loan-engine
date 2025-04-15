@@ -1,0 +1,6 @@
+**/cmd/loan-engine/reports/**
+**/cmd/loan-engine/uploads/**
+**/cmd/loan-engine/.env.docker
+**/cmd/loan-engine/loan-engine
+.DS_Store
+**/*/.env
